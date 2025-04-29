@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #ff0033;
+  --secondary: #3498DB;
+  --accent: #E74C3C;
+  --success: #27AE60;
+  --warning: #F39C12;
+  --error: #C0392B;
+  --background: #F5F7FA;
+  --card: #FFFFFF;
+  --text-primary: #2C3E50;
+  --text-secondary: #7F8C8D;
+  --border: #ECF0F1;
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--background)] text-[var(--text-primary)] font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-[var(--primary)];
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-[var(--primary)] text-white hover:bg-opacity-90;
+  }
+
+  .btn-secondary {
+    @apply bg-[var(--secondary)] text-white hover:bg-opacity-90;
+  }
+
+  .btn-accent {
+    @apply bg-[var(--accent)] text-white hover:bg-opacity-90;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md p-4;
+  }
+
+  .input {
+    @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)];
+  }
+
+  .table-container {
+    @apply w-full overflow-x-auto rounded-lg shadow-md;
+  }
+
+  .data-table {
+    @apply w-full bg-white;
+  }
+
+  .data-table th {
+    @apply px-6 py-3 bg-gray-100 text-left text-xs font-medium text-gray-700 uppercase tracking-wider;
+  }
+
+  .data-table td {
+    @apply px-6 py-4 text-sm text-gray-700 border-t border-gray-200;
+  }
+
+  .status-badge {
+    @apply px-2 py-1 text-xs font-medium rounded-full;
+  }
+
+  .status-completed {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .status-processing {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  .status-pending {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .status-available {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .status-sold {
+    @apply bg-gray-100 text-gray-800;
+  }
+}
+
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-[var(--primary)] hover:bg-opacity-10 hover:text-[var(--primary)] rounded-md transition-all duration-200;
+}
+
+.sidebar-link.active {
+  @apply bg-[var(--primary)] text-white;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

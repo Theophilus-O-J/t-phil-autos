@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { salesData, purchaseData } from '../../utils/mockData';
+import { salesData, purchaseData, dashboardMetrics, calculateMetrics } from '../../utils/mockData';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'sales' | 'purchases'>('sales');
@@ -11,7 +11,7 @@ const Admin: React.FC = () => {
     engineNo: '',
     chassisNo: '',
     plateNo: '',
-    date: ''
+    date: new Date().toISOString().split('T')[0]
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,6 +34,8 @@ const Admin: React.FC = () => {
       date: formData.date
     };
     salesData.unshift(newSale);
+    // Force dashboard metrics recalculation
+    dashboardMetrics.splice(0, dashboardMetrics.length, ...calculateMetrics());
     setFormData({
       customer: '',
       name: '',
@@ -42,7 +44,7 @@ const Admin: React.FC = () => {
       engineNo: '',
       chassisNo: '',
       plateNo: '',
-      date: ''
+      date: new Date().toISOString().split('T')[0]
     });
   };
 
@@ -59,6 +61,8 @@ const Admin: React.FC = () => {
       date: formData.date
     };
     purchaseData.unshift(newPurchase);
+    // Force dashboard metrics recalculation
+    dashboardMetrics.splice(0, dashboardMetrics.length, ...calculateMetrics());
     setFormData({
       customer: '',
       name: '',
@@ -67,7 +71,7 @@ const Admin: React.FC = () => {
       engineNo: '',
       chassisNo: '',
       plateNo: '',
-      date: ''
+      date: new Date().toISOString().split('T')[0]
     });
   };
 

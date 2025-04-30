@@ -93,7 +93,7 @@
 }
 
 .sidebar-link {
-  @apply flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-[var(--primary)] hover:bg-opacity-10 hover:text-[var(--primary)] rounded-md transition-all duration-200;
+  @apply flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-[var(--primary)] hover:text-white rounded-md transition-all duration-200;
 }
 
 .sidebar-link.active {

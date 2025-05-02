@@ -1,21 +1,23 @@
 import React, { useState } from 'react';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Trash2 } from 'lucide-react';
 import DataTable from '../../components/Tables/DataTable';
 import { purchaseData } from '../../utils/mockData';
+import { supabase } from '../../lib/supabase';
 
 const Purchases: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: string } | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedPurchaseId, setSelectedPurchaseId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const sortedData = React.useMemo(() => {
     let sortableItems = [...purchaseData];
     if (sortConfig !== null) {
       sortableItems.sort((a, b) => {
-        // @ts-ignore: dynamic key access
         if (a[sortConfig.key] < b[sortConfig.key]) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
-        // @ts-ignore: dynamic key access
         if (a[sortConfig.key] > b[sortConfig.key]) {
           return sortConfig.direction === 'ascending' ? 1 : -1;
         }
@@ -49,6 +51,66 @@ const Purchases: React.FC = () => {
       return 'none';
     }
     return sortConfig.direction === 'ascending' ? 'asc' : 'desc';
+  };
+
+  const handleDelete = async (mockId: string) => {
+    try {
+      // Find the purchase in mock data to get unique identifiers
+      const purchase = purchaseData.find(p => p.id === mockId);
+      if (!purchase) {
+        throw new Error('Purchase not found');
+      }
+
+      // Query Supabase to get the actual UUID using unique identifiers
+      const { data, error } = await supabase
+        .from('purchases')
+        .select('id')
+        .eq('name', purchase.name)
+        .eq('engine_no', purchase.engineNo)
+        .eq('chassis_no', purchase.chassisNo)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('Purchase record not found in database');
+      }
+
+      setSelectedPurchaseId(data.id);
+      setDeleteError(null);
+      setShowDeleteModal(true);
+    } catch (error) {
+      console.error('Error preparing delete:', error);
+      setDeleteError(error instanceof Error ? error.message : 'Failed to prepare delete operation');
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedPurchaseId) return;
+
+    try {
+      const { error } = await supabase
+        .from('purchases')
+        .delete()
+        .eq('id', selectedPurchaseId);
+
+      if (error) {
+        console.error('Supabase delete error:', error);
+        setDeleteError(error.message);
+        return;
+      }
+
+      setShowDeleteModal(false);
+      setSelectedPurchaseId(null);
+      setDeleteError(null);
+      
+      // Refresh data from Supabase here instead of manipulating mock data
+    } catch (error) {
+      console.error('Error deleting purchase:', error);
+      setDeleteError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    }
   };
 
   return (
@@ -168,8 +230,18 @@ const Purchases: React.FC = () => {
                   <td>{purchase.date}</td>
                   <td>
                     <div className="flex space-x-2">
-                      <button className="text-secondary hover:underline">Edit</button>
-                      <button className="text-gray-500 hover:underline">View</button>
+                      <button 
+                        className="text-[var(--primary)] hover:underline"
+                        onClick={() => {/* Handle edit */}}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(purchase.id.toString())}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -178,6 +250,38 @@ const Purchases: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to delete this purchase record? This action cannot be undone.</p>
+            {deleteError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-600">
+                {deleteError}
+              </div>
+            )}
+            <div className="flex justify-end space-x-3">
+              <button
+                className="btn border border-gray-300 hover:bg-gray-50"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteError(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn bg-red-500 text-white hover:bg-red-600"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

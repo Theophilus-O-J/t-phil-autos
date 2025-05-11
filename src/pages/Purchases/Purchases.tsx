@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Plus, Search, Filter, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import DataTable from '../../components/Tables/DataTable';
 import { purchaseData } from '../../utils/mockData';
 import { supabase } from '../../lib/supabase';
 
 const Purchases: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: string } | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -53,32 +55,9 @@ const Purchases: React.FC = () => {
     return sortConfig.direction === 'ascending' ? 'asc' : 'desc';
   };
 
-  const handleDelete = async (mockId: string) => {
+  const handleDelete = (id: string) => {
     try {
-      // Find the purchase in mock data to get unique identifiers
-      const purchase = purchaseData.find(p => p.id === mockId);
-      if (!purchase) {
-        throw new Error('Purchase not found');
-      }
-
-      // Query Supabase to get the actual UUID using unique identifiers
-      const { data, error } = await supabase
-        .from('purchases')
-        .select('id')
-        .eq('name', purchase.name)
-        .eq('engine_no', purchase.engineNo)
-        .eq('chassis_no', purchase.chassisNo)
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      if (!data) {
-        throw new Error('Purchase record not found in database');
-      }
-
-      setSelectedPurchaseId(data.id);
+      setSelectedPurchaseId(id);
       setDeleteError(null);
       setShowDeleteModal(true);
     } catch (error) {
@@ -105,8 +84,6 @@ const Purchases: React.FC = () => {
       setShowDeleteModal(false);
       setSelectedPurchaseId(null);
       setDeleteError(null);
-      
-      // Refresh data from Supabase here instead of manipulating mock data
     } catch (error) {
       console.error('Error deleting purchase:', error);
       setDeleteError(error instanceof Error ? error.message : 'An unexpected error occurred');
@@ -117,7 +94,10 @@ const Purchases: React.FC = () => {
     <div className="space-y-6 fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Purchase Tracking</h1>
-        <button className="btn btn-primary flex items-center gap-2">
+        <button 
+          className="btn btn-primary flex items-center gap-2"
+          onClick={() => navigate('/admin/purchases')}
+        >
           <Plus size={16} />
           New Purchase
         </button>
@@ -238,7 +218,7 @@ const Purchases: React.FC = () => {
                       </button>
                       <button 
                         className="text-red-500 hover:text-red-700"
-                        onClick={() => handleDelete(purchase.id.toString())}
+                        onClick={() => handleDelete(purchase.id)}
                       >
                         <Trash2 size={16} />
                       </button>

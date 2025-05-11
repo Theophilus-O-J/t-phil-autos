@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Download, Plus, Search, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import DataTable from '../../components/Tables/DataTable';
 import { salesData } from '../../utils/mockData';
 import { supabase } from '../../lib/supabase';
 
 const Sales: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -24,37 +26,9 @@ const Sales: React.FC = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
-  const handleDelete = async (mockId: string) => {
+  const handleDelete = (id: string) => {
     try {
-      // Find the sale in mock data to get unique identifiers
-      const sale = salesData.find(s => s.id === Number(mockId));
-      if (!sale) {
-        throw new Error('Sale not found in mock data');
-      }
-
-      // Query Supabase to get the actual UUID using all available unique identifiers
-      const { data, error } = await supabase
-        .from('sales')
-        .select('id')
-        .eq('customer', sale.customer)
-        .eq('engine_no', sale.engineNo)
-        .eq('chassis_no', sale.chassisNo)
-        .eq('plate_no', sale.plateNo)
-        .eq('date', sale.date)
-        .single();
-
-      if (error) {
-        if (error.message.includes('no rows')) {
-          throw new Error('Sale record not found in database');
-        }
-        throw error;
-      }
-
-      if (!data?.id) {
-        throw new Error('Invalid sale record data returned from database');
-      }
-
-      setSelectedSaleId(data.id);
+      setSelectedSaleId(id);
       setDeleteError(null);
       setShowDeleteModal(true);
     } catch (error) {
@@ -81,8 +55,6 @@ const Sales: React.FC = () => {
       setShowDeleteModal(false);
       setSelectedSaleId(null);
       setDeleteError(null);
-      
-      // Refresh data from Supabase here instead of manipulating mock data
     } catch (error) {
       console.error('Error deleting sale:', error);
       setDeleteError(error instanceof Error ? error.message : 'An unexpected error occurred');
@@ -98,7 +70,10 @@ const Sales: React.FC = () => {
             <Download size={16} />
             Export
           </button>
-          <button className="btn btn-primary flex items-center gap-2">
+          <button 
+            className="btn btn-primary flex items-center gap-2"
+            onClick={() => navigate('/admin/sales')}
+          >
             <Plus size={16} />
             New Sale
           </button>
@@ -160,7 +135,7 @@ const Sales: React.FC = () => {
                   </button>
                   <button 
                     className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete(sale.id.toString())}
+                    onClick={() => handleDelete(sale.id)}
                   >
                     <Trash2 size={16} />
                   </button>
